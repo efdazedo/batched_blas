@@ -276,14 +276,19 @@
       end module test_batched_mod
 
       program test_batch
+      use batched_mod
       use test_batched_mod
       implicit none
       integer :: n, batchCount
       integer :: it, ntimes
 
-      batchCount = 16*4;
-      n = 32;
-      ntimes = 5;
+#ifdef USE_MAGMA
+      call magma_init()
+#endif
+
+      batchCount = 16*4
+      n = 32
+      ntimes = 5
       print*,'n = ',n,' batchCount = ', batchCount
       print*,'ntimes = ', ntimes
 
