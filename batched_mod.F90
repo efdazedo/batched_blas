@@ -28,11 +28,12 @@
 
 #ifdef USE_CUBLAS
 #include "cublasZStridedBatched.h"
+#elif USE_MAGMA
+#include "magmaZStridedBatched.h"
+#elif USE_HIPBLAS
+#include "hipblasZStridedBatched.h"
 #endif
 
-#ifdef USE_MAGMA
-#include "magmaZStridedBatched.h"
-#endif
 
         contains
 
@@ -50,7 +51,6 @@
 
         integer :: mm, nn, ibatch, ip_A,ip_pivot
 
-#ifdef USE_CUBLAS
 
 #ifdef _OPENACC
 !$acc host_data use_device(dA,dpivot,dinfo)
@@ -58,33 +58,17 @@
 !$omp target data map(tofrom:dA,dpivot) map(from:dinfo)
 #endif
 
+#ifdef USE_CUBLAS
             call cublasZgetrfStridedBatched(n,dA,ldA,strideA,            &
      &              dpivot, dinfo, batchCount )
 
-#ifdef _OPENACC
-!$acc end host_data
-#else
-!$omp end target data
-#endif
-
-#else
-
-#ifdef USE_MAGMA
-
-#ifdef _OPENACC
-!$acc host_data use_device(dA,dpivot,dinfo)
-#else
-!$omp target data map(tofrom:dA,dpivot) map(from:dinfo)
-#endif
+#elif USE_MAGMA
 
             call magmaZgetrfStridedBatched(n,dA,ldA,strideA,             &
      &              dpivot, dinfo, batchCount )
-
-#ifdef _OPENACC
-!$acc end host_data
-#else
-!$omp end target data
-#endif
+#elif USE_HIPBLAS
+            call hipblasZgetrfStridedBatched(n,dA,ldA,strideA,            &
+     &              dpivot, dinfo, batchCount )
 
 #else
 
@@ -100,7 +84,13 @@
 #endif
 
 
+
+#ifdef _OPENACC
+!$acc end host_data
+#else
+!$omp end target data
 #endif
+
 
          return
          end subroutine ZgetrfStridedBatchedF
@@ -138,45 +128,32 @@
         integer :: ibatch,ip_A, ip_B, ip_pivot
 
         
-#ifdef USE_CUBLAS
-
+#if defined(USE_CUBLAS) || defined(USE_HIPBLAS) || defined(USE_MAGMA)
 #ifdef _OPENACC
 !$acc host_data use_device(dA,dB,dpivot)
 #else
 !$omp target data map(to:dA,dpivot) map(tofrom:dB)
 #endif
+#endif
 
+#ifdef USE_CUBLAS
           call cublasZgetrsStridedBatched(n,nrhs,c_trans,                &
      &      dA,ldA,strideA,  dpivot, dB, ldB, strideB,                   &
      &      dinfo, batchCount)
 
-#ifdef _OPENACC
-!$acc end host_data
-#else
-!$omp end target data
-#endif
-
-#else
-
-#ifdef USE_MAGMA
-
-#ifdef _OPENACC
-!$acc host_data use_device(dA,dB,dpivot)
-#else
-!$omp target data map(to:dA,dpivot) map(tofrom:dB)
-#endif
+#elif USE_MAGMA
 
           call magmaZgetrsStridedBatched(n,nrhs,c_trans,                 &
      &      dA,ldA,strideA,  dpivot, dB, ldB, strideB,                   &
      &      dinfo, batchCount)
-#ifdef _OPENACC
-!$acc end host_data
-#else
-!$omp end target data
-#endif
+
+#elif USE_HIPBLAS
+
+          call hipblasZgetrsStridedBatched(n,nrhs,c_trans,                &
+     &      dA,ldA,strideA,  dpivot, dB, ldB, strideB,                   &
+     &      dinfo, batchCount)
 
 #else
-
         trans = c_trans
 
 !$omp parallel do private(ibatch,ip_A,ip_B,ip_pivot)
@@ -188,30 +165,38 @@
      &                 dA(ip_A),ldA, dpivot(ip_pivot),                   &
      &                 dB(ip_B), ldB, dinfo(ibatch))
              enddo
-
 #endif
 
+
+
+#if defined(USE_CUBLAS) || defined(USE_HIPBLAS) || defined(USE_MAGMA)
+#ifdef _OPENACC
+!$acc end host_data
+#else
+!$omp end target data
 #endif
+#endif
+
           return
           end subroutine ZgetrsStridedBatchedF
 
           subroutine init_batched()
 #ifdef USE_CUBLAS
           call cublasCreate()
-#endif
-
-#ifdef USE_MAGMA
+#elif USE_MAGMA
           call magmaCreate()
+#elif USE_HIPBLAS
+          call hipblasCreate()
 #endif
           end subroutine init_batched
 
           subroutine finalize_batched()
 #ifdef USE_CUBLAS
           call cublasDestroy()
-#endif
-
-#ifdef USE_MAGMA
+#elif USE_MAGMA
          call magmaDestroy()
+#elif USE_HIPBLAS
+          call hipblasDestroy()
 #endif
           end subroutine finalize_batched
 

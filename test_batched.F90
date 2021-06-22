@@ -282,7 +282,7 @@
       integer :: it, ntimes
 
       batchCount = 16*4;
-      n = 1024;
+      n = 32;
       ntimes = 5;
       print*,'n = ',n,' batchCount = ', batchCount
       print*,'ntimes = ', ntimes
