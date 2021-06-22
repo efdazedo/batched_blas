@@ -1,0 +1,16 @@
+CXX=hipcc
+CXXFLAGS=  -I$(HIPBLASDIR)/include
+F90=flang
+
+# FFLAGS_COMMON=-mp -Minfo=all  -UUSE_MAGMA -DUSE_CUBLAS
+FFLAGS_COMMON=-fopenmp   -UUSE_MAGMA -UUSE_CUBLAS -DUSE_HIPBLAS  \
+	-I$(AOMPDIR)/include
+
+FFLAGS_acc= -fast -acc -cuda -gpu=cc70 $(FFLAGS_COMMON)
+FFLAGS_omp= -fast -mp=gpu -cuda -gpu=cc70 $(FFLAGS_COMMON)
+
+
+FFLAGS=-O3 $(FFLAGS_COMMON) 
+LIBS= -llapack -lblas  \
+	-L$(HIPBLASDIR)/lib -lhipblas \
+	-L$(HIPDIR)/lib -lamdhip64
