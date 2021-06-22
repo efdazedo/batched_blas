@@ -55,7 +55,7 @@
 #ifdef _OPENACC
 !$acc host_data use_device(dA,dpivot,dinfo)
 #else
-!$omp target data use_dev_ptr(dA,dpivot,dinfo)
+!$omp target data map(tofrom:dA,dpivot) map(from:dinfo)
 #endif
 
             call cublasZgetrfStridedBatched(n,dA,ldA,strideA,            &
