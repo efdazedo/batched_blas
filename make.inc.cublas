@@ -3,7 +3,7 @@ CXXFLAGS=  --debug
 F90=nvfortran
 
 FFLAGS_COMMON=-mp -Minfo=all  -UUSE_MAGMA -DUSE_CUBLAS
-FFLAGS_O= -fast -acc -Mcuda -ta=tesla,cc60 $(FFLAGS_COMMON)
-FFLAGS_g= -g   -Mcuda  $(FFLAGS_COMMON)
-FFLAGS=$(FFLAGS_O) 
+FFLAGS_acc= -fast -acc -cuda -gpu=cc70 $(FFLAGS_COMMON)
+FFLAGS_omp= -fast -mp=gpu -cuda -gpu=cc70 $(FFLAGS_COMMON)
+FFLAGS=$(FFLAGS_omp) 
 LIBS= -llapack -lblas -cudalibs
