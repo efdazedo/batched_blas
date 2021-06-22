@@ -2,6 +2,9 @@
 #define MAGMA_ZSTRIDEDBATCHED_H 1
       interface
 
+        subroutine magma_init() bind(c,name='magma_init')
+	end subroutine magma_init
+
         subroutine magmaCreate() bind(c,name='magmaCreate_')
         end subroutine magmaCreate
 
