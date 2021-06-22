@@ -1,0 +1,10 @@
+CXX=nvcc -x cu  -Xcompiler -fopenmp  --gpu-architecture=sm_60
+CXXFLAGS=  -g -std=c++11 -I$(MAGMA_DIR)/include -DUSE_MAGMA -UUSE_CUBLAS
+F90=pgfortran
+MAGMA_DIR=/home/e6d/MAGMA/magma-2.5.2
+
+FFLAGS_COMMON=-mp -Minfo=all -I$(MAGMA_DIR)/include -DUSE_MAGMA
+FFLAGS_O= -fast -acc -Mcuda -ta=tesla,cc60 $(FFLAGS_COMMON)
+FFLAGS_g= -g   -Mcuda  $(FFLAGS_COMMON)
+FFLAGS=$(FFLAGS_O) 
+LIBS= -L$(MAGMA_DIR)/lib -lmagma -llapack -lblas -cudalibs

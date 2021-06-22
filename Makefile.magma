@@ -1,0 +1,15 @@
+include make.inc
+
+test_batched: assert_mod.F90 magmaZStridedBatched.o batched_mod.F90 test_batched.F90
+	$(F90) $(FFLAGS) -o test_batched magmaZStridedBatched.o \
+		assert_mod.F90 batched_mod.F90 test_batched.F90 \
+		$(LIBS)
+
+magmaZStridedBatched.o: magmaZStridedBatched.cpp
+	$(CXX) $(CXXFLAGS) -c magmaZStridedBatched.cpp
+
+
+clean:
+	touch assert_mod.mod assert_mod.o 
+	touch test_batched
+	rm *.mod *.o test_batched
