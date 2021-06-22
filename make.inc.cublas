@@ -1,8 +1,8 @@
 CXX=nvcc
 CXXFLAGS=  --debug
-F90=pgfortran
+F90=nvfortran
 
-FFLAGS_COMMON=-mp -Miinfo=all  -UUSE_MAGMA -DUSE_CUBLAS
+FFLAGS_COMMON=-mp -Minfo=all  -UUSE_MAGMA -DUSE_CUBLAS
 FFLAGS_O= -fast -acc -Mcuda -ta=tesla,cc60 $(FFLAGS_COMMON)
 FFLAGS_g= -g   -Mcuda  $(FFLAGS_COMMON)
 FFLAGS=$(FFLAGS_O) 
