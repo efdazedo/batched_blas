@@ -286,6 +286,15 @@
       call magma_init()
 #endif
 
+#ifdef USE_CUBLAS
+        print*,'using CUBLAS '
+#elif USE_MAGMA
+        print*,'using MAGMA '
+#elif USE_HIPBLAS
+        print*,'using HIPBLAS '
+#else
+        print*,'using CPU cores'
+#endif
       batchCount = 16*4
       n = 1024
       ntimes = 5
