@@ -1,0 +1,20 @@
+CXX=hipcc 
+CXXFLAGS=  -g -std=c++11 -I$(MAGMA_DIR)/include -DUSE_MAGMA -UUSE_CUBLAS -UUSE_HIPBLAS \
+	--amdgpu-target=gfx906,gfx908  \
+	-DHAVE_HIP -UHAVE_CUBLAS \
+	-I$(HIPSPARSEDIR)/include \
+	-I$(HIPDIR)/include -I$(HIPBLASDIR)/include 
+F90=flang
+MAGMA_DIR=/home/e6d/MAGMA/magma
+
+FFLAGS_COMMON=-fopenmp  -I$(MAGMA_DIR)/include -DUSE_MAGMA -UUSE_CUBLAS -UUSE_HIPBLAS \
+	-I$(AOMPDIR)/include 
+
+FFLAGS_O= -fast -acc -Mcuda -ta=tesla,cc60 $(FFLAGS_COMMON)
+FFLAGS_g= -g   -Mcuda  $(FFLAGS_COMMON)
+
+FFLAGS=-g $(FFLAGS_COMMON)  
+LIBS= -L$(MAGMA_DIR)/lib -lmagma -llapack -lblas  \
+	-L$(HIPSPARSEDIR)/lib -lhipsparse \
+	-L$(HIPBLASDIR)/lib -lhipblas \
+	-L$(HIPDIR)/lib -lamdhip64
