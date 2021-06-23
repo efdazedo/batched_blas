@@ -287,7 +287,7 @@
 #endif
 
       batchCount = 16*4
-      n = 32
+      n = 1024
       ntimes = 5
       print*,'n = ',n,' batchCount = ', batchCount
       print*,'ntimes = ', ntimes

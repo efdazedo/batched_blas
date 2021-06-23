@@ -38,16 +38,16 @@
         contains
 
         subroutine ZgetrfStridedBatchedF( n, dA, ldA, strideA, &
-     &       dpivot, dinfo, batchCount )
+     &       dpivot, dinfo, nbatch )
         use iso_c_binding
         implicit none
-        integer(kind=c_int), value :: n, batchCount, ldA
+        integer(kind=c_int), value :: n, nbatch, ldA
         integer(kind=c_size_t), value :: strideA
 
-        integer(kind=c_int) :: dpivot(*)
-        integer(kind=c_int) :: dinfo(batchCount)
+        integer(kind=c_int) :: dpivot(n*nbatch)
+        integer(kind=c_int) :: dinfo(nbatch)
 
-        complex(kind=c_double_complex) :: dA(*)
+        complex(kind=c_double_complex)::dA(ldA*n+(nbatch-1)*strideA)
 
         integer :: mm, nn, ibatch, ip_A,ip_pivot
 
@@ -60,20 +60,20 @@
 
 #ifdef USE_CUBLAS
             call cublasZgetrfStridedBatched(n,dA,ldA,strideA,            &
-     &              dpivot, dinfo, batchCount )
+     &              dpivot, dinfo, nbatch )
 
 #elif USE_MAGMA
 
             call magmaZgetrfStridedBatched(n,dA,ldA,strideA,             &
-     &              dpivot, dinfo, batchCount )
+     &              dpivot, dinfo, nbatch )
 #elif USE_HIPBLAS
             call hipblasZgetrfStridedBatched(n,dA,ldA,strideA,            &
-     &              dpivot, dinfo, batchCount )
+     &              dpivot, dinfo, nbatch )
 
 #else
 
 !$omp parallel do private(ibatch,ip_A,ip_pivot,mm,nn)
-            do ibatch=1,batchCount
+            do ibatch=1,nbatch
                ip_A = 1 + (ibatch-1)*strideA
                ip_pivot = 1 + (ibatch-1)*n
                mm = n
@@ -100,27 +100,28 @@
 
         subroutine ZgetrsStridedBatchedF(c_trans,n,nrhs,                 &
      &      dA,ldA,strideA,  dpivot, dB, ldB, strideB,                   &
-     &      dinfo, batchCount)                                           
+     &      dinfo, nbatch)                                           
 
         use iso_c_binding
         implicit none
 
         integer(kind=c_int), value :: n
         integer(kind=c_int), value :: nrhs
-        integer(kind=c_int), value :: batchCount
+        integer(kind=c_int), value :: nbatch
         integer(kind=c_int), value :: ldA
         integer(kind=c_int), value :: ldB
 
         character(kind=c_char), value :: c_trans
-
-        complex(kind=c_double_complex) :: dA(*)
-        complex(kind=c_double_complex) :: dB(*)
-
         integer(kind=c_size_t), value :: strideA
         integer(kind=c_size_t), value :: strideB
 
-        integer(kind=c_int) :: dinfo(batchCount)
-        integer(kind=c_int) :: dpivot(*)
+
+        complex(kind=c_double_complex)::dA(ldA*n+(nbatch-1)*strideA)
+        complex(kind=c_double_complex)::dB(ldB*nrhs+(nbatch-1)*strideB)
+
+
+        integer(kind=c_int) :: dinfo(nbatch)
+        integer(kind=c_int) :: dpivot(n*nbatch)
 
 
 
@@ -139,25 +140,25 @@
 #ifdef USE_CUBLAS
           call cublasZgetrsStridedBatched(n,nrhs,c_trans,                &
      &      dA,ldA,strideA,  dpivot, dB, ldB, strideB,                   &
-     &      dinfo, batchCount)
+     &      dinfo, nbatch)
 
 #elif USE_MAGMA
 
           call magmaZgetrsStridedBatched(n,nrhs,c_trans,                 &
      &      dA,ldA,strideA,  dpivot, dB, ldB, strideB,                   &
-     &      dinfo, batchCount)
+     &      dinfo, nbatch)
 
 #elif USE_HIPBLAS
 
           call hipblasZgetrsStridedBatched(n,nrhs,c_trans,                &
      &      dA,ldA,strideA,  dpivot, dB, ldB, strideB,                   &
-     &      dinfo, batchCount)
+     &      dinfo, nbatch)
 
 #else
         trans = c_trans
 
 !$omp parallel do private(ibatch,ip_A,ip_B,ip_pivot)
-             do ibatch=1,batchCount
+             do ibatch=1,nbatch
                ip_A = 1 + (ibatch-1)*strideA
                ip_B = 1 + (ibatch-1)*strideB
                ip_pivot = 1 + (ibatch-1)*n
